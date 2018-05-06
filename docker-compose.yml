@@ -1,0 +1,133 @@
+version: '2'
+services:
+  
+  php:
+    image: php:7.1-fpm-alpine
+    build: 
+      context: './.setup/php/'
+    volumes:
+      - ./public_html/:/var/www/html/
+      - ./.setup/php/php.ini:/usr/local/etc/php/php.ini
+      - ./.setup/php/docker-php-ext-redis.ini:/usr/local/etc/php/conf.d/docker-php-ext-redis.ini
+    links:
+      - redis:cacheserver
+    networks:
+      public_net:
+        ipv4_address: ${PHP_IP}
+    container_name: php
+
+  redis:
+    build: ./.setup/cache
+    networks:
+      public_net:
+        ipv4_address: ${REDIS_IP}
+    container_name: cacheserver
+
+  apache1:
+    image: httpd:2.4-alpine
+    build: './.setup/apache/'
+    depends_on:
+      - php
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public_html/:/var/www/html/
+      - ./.setup/apache/docker.apache.conf:/usr/local/apache2/conf.d/docker.apache.conf
+      - ./.setup/apache/logs/:/usr/local/apache2/logs
+    expose:
+      - ${APACHE_EXPOSED_PORT}
+    networks:
+      public_net:
+        ipv4_address: ${APACHE_1_IP}
+    container_name: apache1
+
+  apache2:
+    image: httpd:2.4-alpine
+    build: './.setup/apache/'
+    depends_on:
+      - php
+    ports:
+      - "8081:80"
+    volumes:
+      - ./public_html/:/var/www/html/
+      - ./.setup/apache/docker.apache.conf:/usr/local/apache2/conf.d/docker.apache.conf
+      - ./.setup/apache/logs/:/usr/local/apache2/logs
+    expose:
+      - ${APACHE_EXPOSED_PORT}
+    networks:
+      public_net:
+        ipv4_address: ${APACHE_2_IP}
+    container_name: apache2
+
+  haproxy:
+    image: haproxy
+    ports:
+      - 80:80
+    expose:
+      - 80
+    networks:
+      public_net:
+        ipv4_address: ${HA_PROXY_IP}
+    environment:
+      - APACHE_1_IP=${APACHE_1_IP}
+      - APACHE_2_IP=${APACHE_2_IP}
+      - APACHE_EXPOSED_PORT=${APACHE_EXPOSED_PORT}
+    volumes:
+      - ./loadbalancer/haproxy:/usr/local/etc/haproxy:ro
+    container_name: haproxy
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      public_net:
+        ipv4_address: ${ELASTIC_IP}
+    container_name: elasticsearch
+
+  logstash:
+    build:
+      context: logstash/
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./.setup/apache/logs/:/usr/local/apache2/logs
+    ports:
+      - "5000:5000"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      public_net:
+        ipv4_address: ${LOGSTASH_IP}
+    depends_on:
+      - elasticsearch
+    container_name: logstash
+
+  kibana:
+    build:
+      context: kibana/
+    volumes:
+      - ./kibana/config/:/usr/share/kibana/config:ro
+    ports:
+      - "5601:5601"
+    networks:
+      public_net:
+        ipv4_address: ${KIBANA_IP}
+    depends_on:
+      - elasticsearch
+    container_name: kibana
+
+networks:
+    public_net:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: ${NETWORK_SUBNET}
+
