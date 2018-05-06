@@ -1833,3 +1833,8 @@
 [Sun May 06 10:29:03.843563 2018] [core:notice] [pid 1:tid 140071827946376] AH00094: Command line: 'httpd -D FOREGROUND'
 [Sun May 06 10:29:04.695604 2018] [mpm_event:notice] [pid 1:tid 139852314143624] AH00489: Apache/2.4.33 (Unix) configured -- resuming normal operations
 [Sun May 06 10:29:04.695683 2018] [core:notice] [pid 1:tid 139852314143624] AH00094: Command line: 'httpd -D FOREGROUND'
+[Sun May 06 11:37:07.869182 2018] [mpm_event:notice] [pid 1:tid 140607334665096] AH00489: Apache/2.4.33 (Unix) configured -- resuming normal operations
+[Sun May 06 11:37:07.869271 2018] [core:notice] [pid 1:tid 140607334665096] AH00094: Command line: 'httpd -D FOREGROUND'
+[Sun May 06 11:37:07.889290 2018] [core:warn] [pid 1:tid 140647385705352] AH00098: pid file /usr/local/apache2/logs/httpd.pid overwritten -- Unclean shutdown of previous Apache run?
+[Sun May 06 11:37:07.915689 2018] [mpm_event:notice] [pid 1:tid 140647385705352] AH00489: Apache/2.4.33 (Unix) configured -- resuming normal operations
+[Sun May 06 11:37:07.915716 2018] [core:notice] [pid 1:tid 140647385705352] AH00094: Command line: 'httpd -D FOREGROUND'
