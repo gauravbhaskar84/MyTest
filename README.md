@@ -14,3 +14,13 @@ To check logs in Kibana - http://localhost:5601
 To check if session are getting generated in redis, connect to the container (docker container exec -it <container_name> sh), connect to redis-cli and execute (keys *).
 
 To verify - haproxy is working file - http://localhost will be pointed to http://localhost:8080 and http://localhost:8081, they both will serve php code via proxy to php container.
+
+To use this project:
+
+git clone https://github.com/gauravbhaskar84/MyTest.git
+cd MyTest
+docker-compose up -d
+
+To check running container:
+
+docker container ls -a
